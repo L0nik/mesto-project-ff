@@ -63,8 +63,22 @@ function documentClickEventHandler(evt) {
   }
 }
 
+function profileEditPopupSubmitHandler(evt, profileEditPopupElement) {
+  evt.preventDefault();
+  const name = evt.target.querySelector('.popup__input_type_name').value;
+  const job = evt.target.querySelector('.popup__input_type_description').value;
+  document.querySelector('.profile__title').textContent = name;
+  document.querySelector('.profile__description').textContent = job;
+  closePopup(profileEditPopupElement);
+}
+
 profileEditButtonElement.addEventListener('click', function(evt) {
   const profileEditPopupElement = document.querySelector('.popup_type_edit');
+  const nameInput = profileEditPopupElement.querySelector('.popup__input_type_name');
+  const jobInput = profileEditPopupElement.querySelector('.popup__input_type_description');
+  nameInput.value = document.querySelector('.profile__title').textContent;
+  jobInput.value = document.querySelector('.profile__description').textContent;
+  profileEditPopupElement.addEventListener('submit', (evt) => profileEditPopupSubmitHandler(evt, profileEditPopupElement));
   openPopup(profileEditPopupElement);
 });
 
