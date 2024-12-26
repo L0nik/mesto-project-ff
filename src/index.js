@@ -6,7 +6,7 @@ const placesListElement = document.querySelector('.places__list');
 const profileEditButtonElement = document.querySelector('.profile__edit-button');
 const profileAddButtonElement = document.querySelector('.profile__add-button');
 
-function createCard(cardData, deleteCardCallback, likeCardCallback) {
+function createCard(cardData, deleteCardCallback, likeCardCallback, imageClickEventHandler) {
   
   const cardElement = cardTemplate.cloneNode(true);
   const cardTitleElement = cardElement.querySelector('.card__title');
@@ -18,10 +18,7 @@ function createCard(cardData, deleteCardCallback, likeCardCallback) {
   cardImageElement.src = cardData.link;
   cardImageElement.alt = `${cardData.name} (фото)`;
 
-  cardImageElement.addEventListener('click', function() {
-    const imagePopupElement = document.querySelector('.popup_type_image');
-    openPopup(imagePopupElement);
-  });
+  cardImageElement.addEventListener('click', imageClickEventHandler);
   cardDeleteButtonElement.addEventListener('click', deleteCardCallback);
   cardLikeButtonElement.addEventListener('click', likeCardCallback);
 
@@ -39,7 +36,7 @@ function cardClickEventhandler(evt) {
 }
 
 for (const cardData of initialCards){
-  placesListElement.append(createCard(cardData, deleteCard, cardClickEventhandler));
+  placesListElement.append(createCard(cardData, deleteCard, cardClickEventhandler, imageClickEventHandler));
 }
 
 function openPopup(popupElement) {
@@ -89,6 +86,17 @@ function newCardPopupSubmitHandler(evt) {
   placesListElement.append(createCard({name, link}, deleteCard));
   newCardForm.reset();
   closePopup(newCardPopupElement);
+}
+
+function imageClickEventHandler(evt) {
+    const imagePopupElement = document.querySelector('.popup_type_image');
+    const popupImage = imagePopupElement.querySelector('.popup__image');
+    const popupCaption = imagePopupElement.querySelector('.popup__caption');
+    const cardElement = evt.target.closest('.card');
+    popupCaption.textContent = cardElement.querySelector('.card__title').textContent;
+    popupImage.src = evt.target.src;
+    popupImage.alt = `${popupCaption.textContent} (фото)`;
+    openPopup(imagePopupElement);
 }
 
 profileEditButtonElement.addEventListener('click', function(evt) {
