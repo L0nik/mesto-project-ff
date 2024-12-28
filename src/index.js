@@ -1,6 +1,6 @@
 import './index.css';
 import { initialCards } from './cards.js';
-import { createCard, deleteCard, cardClickEventhandler } from './components/card.js';
+import { createCard, deleteCard, likeButtonHandler } from './components/card.js';
 import { openPopup, closePopup } from './components/popup.js'
 
 const placesListElement = document.querySelector('.places__list');
@@ -13,7 +13,7 @@ const profileEditPopupJobInput = profileEditPopupElement.querySelector('.popup__
 const profileTitleElement = document.querySelector('.profile__title');
 const profileDescriptionElement = document.querySelector('.profile__description');
 const newCardPopupElement = document.querySelector('.popup_type_new-card');
-const newCardForm = newCardPopupElement.querySelector('.popup__form');
+const newCardForm = document.forms["new-place"];
 const newCardPopupNameInput = newCardForm.elements['place-name'];
 const newCardPopupLinkInput = newCardForm.elements['link'];
 const imagePopupElement = document.querySelector('.popup_type_image');
@@ -25,7 +25,7 @@ function profileEditPopupSubmitHandler(evt) {
   evt.preventDefault();
   profileTitleElement.textContent = profileEditPopupNameInput.value;
   profileDescriptionElement.textContent = profileEditPopupJobInput.value;
-  closePopup(profileEditPopupElement, profileEditPopupSubmitHandler);
+  closePopup(profileEditPopupElement);
 }
 
 function newCardPopupSubmitHandler(evt) {
@@ -34,42 +34,47 @@ function newCardPopupSubmitHandler(evt) {
     name: newCardPopupNameInput.value,
     link: newCardPopupLinkInput.value
   };
-  placesListElement.prepend(createCard(cardData, deleteCard, cardClickEventhandler, imageClickEventHandler));
+  renderCard(cardData, {deleteCard, likeButtonHandler, imageClickEventHandler});
   newCardForm.reset();
   closePopup(newCardPopupElement);
 }
 
-function imageClickEventHandler(evt) {
-    const cardElement = evt.target.closest('.card');
-    imagePopupCaptionElement.textContent = cardElement.querySelector('.card__title').textContent;
-    imagePopupImgElement.src = evt.target.src;
-    imagePopupImgElement.alt = `${imagePopupCaptionElement.textContent} (фото)`;
+function imageClickEventHandler(cardData) {
+    imagePopupCaptionElement.textContent = cardData.name;
+    imagePopupImgElement.src = cardData.link;
+    imagePopupImgElement.alt = `${cardData.name} (фото)`;
     openPopup(imagePopupElement);
 }
 
-function documentClickEventHandler(evt) {
-  for (let popupElement of popupElements) {
-    if (popupElement === evt.target){
-      closePopup(evt.target);
-    }
-  }
+function renderCard(cardData, callbacks, method = "prepend") {
+  const cardElement = createCard(cardData, callbacks);
+  placesListElement[method](cardElement);
 }
 
 for (const cardData of initialCards){
-  placesListElement.append(createCard(cardData, deleteCard, cardClickEventhandler, imageClickEventHandler));
+  renderCard(cardData, {deleteCard, likeButtonHandler, imageClickEventHandler}, "append");
 }
 
 profileEditButton.addEventListener('click', function(evt) {
   profileEditPopupNameInput.value = profileTitleElement.textContent;
   profileEditPopupJobInput.value = profileDescriptionElement.textContent;
-  profileEditPopupElement.addEventListener('submit', profileEditPopupSubmitHandler);
   openPopup(profileEditPopupElement);
 });
 
 profileAddButton.addEventListener('click', function(evt) {
-  const newCardPopupElement = document.querySelector('.popup_type_new-card');
-  newCardPopupElement.addEventListener('submit', newCardPopupSubmitHandler);
   openPopup(newCardPopupElement);
 });
 
-document.addEventListener('click', documentClickEventHandler);
+profileEditPopupElement.addEventListener('submit', profileEditPopupSubmitHandler);
+newCardPopupElement.addEventListener('submit', newCardPopupSubmitHandler);
+
+popupElements.forEach((popupElement) => {
+  popupElement.addEventListener('mousedown', (evt) => {
+    if (evt.target.classList.contains('popup_is-opened')) {
+      closePopup(popupElement);
+    }
+    if (evt.target.classList.contains('popup__close')) {
+      closePopup(popupElement)
+    }
+  })
+}) 
