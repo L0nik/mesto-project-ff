@@ -1,6 +1,3 @@
-module.exports = {
-  openPopup, closePopup
-}
 
 function openPopup(popupElement) {
   popupElement.classList.add('popup_is-opened');
@@ -20,4 +17,8 @@ function popupKeydownEventHandler(evt) {
     const popupElement = evt.target.closest('.popup');
     closePopup(popupElement);
   }
+}
+
+module.exports = {
+  openPopup, closePopup
 }
