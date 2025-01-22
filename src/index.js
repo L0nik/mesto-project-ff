@@ -20,6 +20,84 @@ const imagePopupElement = document.querySelector('.popup_type_image');
 const imagePopupImgElement = imagePopupElement.querySelector('.popup__image');
 const imagePopupCaptionElement = imagePopupElement.querySelector('.popup__caption');
 
+const validationSettings = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__error',
+  errorClass: 'popup__error_visible'
+};
+
+function clearValidation(formElement, validationSettings) {
+  const inputList = Array.from(formElement.querySelectorAll(validationSettings.inputSelector));
+  const buttonElement = formElement.querySelector(validationSettings.submitButtonSelector);
+  toggleButtonState(inputList, buttonElement, validationSettings);
+  inputList.forEach((inputElement) => hideInputError(formElement, inputElement, validationSettings));
+}
+
+function enableValidation(validationSettings) {
+  const formList = Array.from(document.querySelectorAll(validationSettings.formSelector));
+  formList.forEach(formElement => setEventListeners(formElement, validationSettings));
+}
+
+function setEventListeners(formElement, validationSettings) {
+  const inputList = Array.from(formElement.querySelectorAll(validationSettings.inputSelector));
+  const buttonElement = formElement.querySelector(validationSettings.submitButtonSelector);
+  inputList.forEach((inputElement) => {
+    inputElement.addEventListener('input', () => {
+      isValid(formElement, inputElement, validationSettings);
+      toggleButtonState(inputList, buttonElement, validationSettings);
+    });
+  });
+}
+
+function toggleButtonState(inputList, buttonElement, validationSettings) {
+  if (hasInvalidInput(inputList)) {
+    buttonElement.disabled = true;
+    buttonElement.classList.add(validationSettings.inactiveButtonClass);
+  }
+  else {
+    buttonElement.disabled = false;
+    buttonElement.classList.remove(validationSettings.inactiveButtonClass);
+  }
+}
+
+function hasInvalidInput(inputList) {
+  return inputList.some(inputElement => !inputElement.validity.valid);
+}
+
+function isValid(formElement, inputElement, validationSettings) {
+  if (!inputElement.validity.valid) {
+    showInputError(formElement, inputElement, validationSettings, getValidationMessage(inputElement));
+  } 
+  else {
+    hideInputError(formElement, inputElement, validationSettings);
+  }
+}
+
+function getValidationMessage(inputElement) {
+  if (inputElement.validity.patternMismatch) {
+    return "Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы";
+  }
+  else {
+    return inputElement.validationMessage;
+  } 
+}
+
+function showInputError(formElement, inputElement, validationSettings, errorMessage) {
+  const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
+  inputElement.classList.add('popup__input_error');
+  errorElement.textContent = errorMessage;
+  errorElement.classList.add(validationSettings.errorClass);
+}
+
+function hideInputError(formElement, inputElement, validationSettings) {
+  const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
+  inputElement.classList.remove('popup__input_error');
+  errorElement.classList.remove(validationSettings.errorClass);
+  errorElement.textContent = '';
+}; 
 
 function profileEditPopupSubmitHandler(evt) {
   evt.preventDefault();
@@ -58,6 +136,7 @@ for (const cardData of initialCards){
 profileEditButton.addEventListener('click', function(evt) {
   profileEditPopupNameInput.value = profileTitleElement.textContent;
   profileEditPopupJobInput.value = profileDescriptionElement.textContent;
+  clearValidation(document.forms['edit-profile'], validationSettings);
   openPopup(profileEditPopupElement);
 });
 
@@ -77,4 +156,6 @@ popupElements.forEach((popupElement) => {
       closePopup(popupElement)
     }
   })
-}) 
+})
+
+enableValidation(validationSettings);

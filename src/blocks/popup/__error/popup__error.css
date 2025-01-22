@@ -1,0 +1,13 @@
+.popup__error {
+  display: none;
+  font-family: inherit;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 15px;
+  color: #FF0000;
+}
+
+.popup__error_visible {
+  display: inline;
+}
