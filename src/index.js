@@ -2,6 +2,7 @@ import './index.css';
 import { initialCards } from './cards.js';
 import { createCard, deleteCard, likeButtonHandler } from './components/card.js';
 import { openPopup, closePopup } from './components/popup.js'
+import { enableValidation, clearValidation } from './components/validation.js'
 
 const placesListElement = document.querySelector('.places__list');
 const profileEditButton = document.querySelector('.profile__edit-button');
@@ -27,76 +28,6 @@ const validationSettings = {
   inactiveButtonClass: 'popup__button_disabled',
   inputErrorClass: 'popup__error',
   errorClass: 'popup__error_visible'
-};
-
-function clearValidation(formElement, validationSettings) {
-  const inputList = Array.from(formElement.querySelectorAll(validationSettings.inputSelector));
-  const buttonElement = formElement.querySelector(validationSettings.submitButtonSelector);
-  toggleButtonState(inputList, buttonElement, validationSettings);
-  inputList.forEach((inputElement) => hideInputError(formElement, inputElement, validationSettings));
-}
-
-function enableValidation(validationSettings) {
-  const formList = Array.from(document.querySelectorAll(validationSettings.formSelector));
-  formList.forEach(formElement => setEventListeners(formElement, validationSettings));
-}
-
-function setEventListeners(formElement, validationSettings) {
-  const inputList = Array.from(formElement.querySelectorAll(validationSettings.inputSelector));
-  const buttonElement = formElement.querySelector(validationSettings.submitButtonSelector);
-  inputList.forEach((inputElement) => {
-    inputElement.addEventListener('input', () => {
-      isValid(formElement, inputElement, validationSettings);
-      toggleButtonState(inputList, buttonElement, validationSettings);
-    });
-  });
-}
-
-function toggleButtonState(inputList, buttonElement, validationSettings) {
-  if (hasInvalidInput(inputList)) {
-    buttonElement.disabled = true;
-    buttonElement.classList.add(validationSettings.inactiveButtonClass);
-  }
-  else {
-    buttonElement.disabled = false;
-    buttonElement.classList.remove(validationSettings.inactiveButtonClass);
-  }
-}
-
-function hasInvalidInput(inputList) {
-  return inputList.some(inputElement => !inputElement.validity.valid);
-}
-
-function isValid(formElement, inputElement, validationSettings) {
-  if (!inputElement.validity.valid) {
-    showInputError(formElement, inputElement, validationSettings, getValidationMessage(inputElement));
-  } 
-  else {
-    hideInputError(formElement, inputElement, validationSettings);
-  }
-}
-
-function getValidationMessage(inputElement) {
-  if (inputElement.validity.patternMismatch) {
-    return "Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы";
-  }
-  else {
-    return inputElement.validationMessage;
-  } 
-}
-
-function showInputError(formElement, inputElement, validationSettings, errorMessage) {
-  const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
-  inputElement.classList.add('popup__input_error');
-  errorElement.textContent = errorMessage;
-  errorElement.classList.add(validationSettings.errorClass);
-}
-
-function hideInputError(formElement, inputElement, validationSettings) {
-  const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
-  inputElement.classList.remove('popup__input_error');
-  errorElement.classList.remove(validationSettings.errorClass);
-  errorElement.textContent = '';
 }; 
 
 function profileEditPopupSubmitHandler(evt) {
@@ -114,6 +45,7 @@ function newCardPopupSubmitHandler(evt) {
   };
   renderCard(cardData, {deleteCard, likeButtonHandler, imageClickEventHandler});
   newCardForm.reset();
+  clearValidation(newCardForm, validationSettings);
   closePopup(newCardPopupElement);
 }
 
@@ -142,6 +74,7 @@ profileEditButton.addEventListener('click', function(evt) {
 
 profileAddButton.addEventListener('click', function(evt) {
   openPopup(newCardPopupElement);
+  clearValidation(newCardForm, validationSettings);
 });
 
 profileEditPopupElement.addEventListener('submit', profileEditPopupSubmitHandler);
