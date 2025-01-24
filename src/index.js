@@ -3,6 +3,7 @@ import { initialCards } from './cards.js';
 import { createCard, deleteCard, likeButtonHandler } from './components/card.js';
 import { openPopup, closePopup } from './components/popup.js'
 import { enableValidation, clearValidation } from './components/validation.js'
+import { apiConfigInit, getUserData } from './components/api.js'
 
 const placesListElement = document.querySelector('.places__list');
 const profileEditButton = document.querySelector('.profile__edit-button');
@@ -61,6 +62,13 @@ function renderCard(cardData, callbacks, method = "prepend") {
   placesListElement[method](cardElement);
 }
 
+function renderUserData(userData) {
+  document.querySelector('.profile__title').textContent = userData.name;
+  document.querySelector('.profile__description').textContent = userData.about;
+  document.querySelector('.profile__image').style.backgroundImage = `url(${userData.avatar})`;
+  console.log(userData.avatar);
+}
+
 for (const cardData of initialCards){
   renderCard(cardData, {deleteCard, likeButtonHandler, imageClickEventHandler}, "append");
 }
@@ -92,3 +100,7 @@ popupElements.forEach((popupElement) => {
 })
 
 enableValidation(validationSettings);
+apiConfigInit('wff-cohort-31', '704e92ea-c623-4f71-b219-923161e177d0');
+getUserData()
+  .then((res) => res.json())
+  .then((data) => renderUserData(data))
