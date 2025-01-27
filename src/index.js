@@ -1,9 +1,8 @@
 import './index.css';
-import { initialCards } from './cards.js';
 import { createCard, deleteCard, likeButtonHandler } from './components/card.js';
 import { openPopup, closePopup } from './components/popup.js'
-import { enableValidation, clearValidation } from './components/validation.js'
-import { apiConfigInit, getUserData } from './components/api.js'
+import { enableValidation, clearValidation } from './validation.js'
+import { apiConfigInit, getUserData, getCards, patchUserData } from './api.js'
 
 const placesListElement = document.querySelector('.places__list');
 const profileEditButton = document.querySelector('.profile__edit-button');
@@ -22,6 +21,8 @@ const imagePopupElement = document.querySelector('.popup_type_image');
 const imagePopupImgElement = imagePopupElement.querySelector('.popup__image');
 const imagePopupCaptionElement = imagePopupElement.querySelector('.popup__caption');
 
+let userId;
+
 const validationSettings = {
   formSelector: '.popup__form',
   inputSelector: '.popup__input',
@@ -33,9 +34,26 @@ const validationSettings = {
 
 function profileEditPopupSubmitHandler(evt) {
   evt.preventDefault();
-  profileTitleElement.textContent = profileEditPopupNameInput.value;
-  profileDescriptionElement.textContent = profileEditPopupJobInput.value;
-  closePopup(profileEditPopupElement);
+  patchUserData({
+    name: profileEditPopupNameInput.value,
+    about: profileEditPopupJobInput.value
+  })
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      }
+      else {
+        console.error('Failed to patch user data');
+      }
+    })
+    .then((res) => {
+      /*profileTitleElement.textContent = profileEditPopupNameInput.value;
+      profileDescriptionElement.textContent = profileEditPopupJobInput.value;*/
+      profileTitleElement.textContent = res.name;
+      profileDescriptionElement.textContent = res.about;
+      closePopup(profileEditPopupElement);
+    })
+    .catch((error) => console.log(error));
 }
 
 function newCardPopupSubmitHandler(evt) {
@@ -66,11 +84,6 @@ function renderUserData(userData) {
   document.querySelector('.profile__title').textContent = userData.name;
   document.querySelector('.profile__description').textContent = userData.about;
   document.querySelector('.profile__image').style.backgroundImage = `url(${userData.avatar})`;
-  console.log(userData.avatar);
-}
-
-for (const cardData of initialCards){
-  renderCard(cardData, {deleteCard, likeButtonHandler, imageClickEventHandler}, "append");
 }
 
 profileEditButton.addEventListener('click', function(evt) {
@@ -101,6 +114,19 @@ popupElements.forEach((popupElement) => {
 
 enableValidation(validationSettings);
 apiConfigInit('wff-cohort-31', '704e92ea-c623-4f71-b219-923161e177d0');
-getUserData()
-  .then((res) => res.json())
-  .then((data) => renderUserData(data))
+
+const userDataPromise = getUserData();
+const initialCardsPromise = getCards();
+Promise.all([userDataPromise, initialCardsPromise])
+  .then((responses) => {
+    responses[0].json().then((userData) =>{
+      userId = userData['_id'];
+      renderUserData(userData);
+    });
+    responses[1].json().then((initialCards) =>{
+      for (const cardData of initialCards){
+        renderCard(cardData, {deleteCard, likeButtonHandler, imageClickEventHandler}, "append");
+      }
+    });
+  })
+  .catch((error) => console.log(error));
