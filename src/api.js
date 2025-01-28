@@ -50,6 +50,15 @@ function patchUserData(userData) {
   return sendRequest(method, resource, headers, userData);
 }
 
+function addCard(cardData) {
+  const method = 'POST';
+  const resource = 'cards';
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+  return sendRequest(method, resource, headers, cardData);
+}
+
 module.exports = {
-  apiConfigInit, getUserData, getCards, patchUserData
+  apiConfigInit, getUserData, getCards, patchUserData, addCard
 }

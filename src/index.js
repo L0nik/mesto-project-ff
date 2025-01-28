@@ -2,7 +2,7 @@ import './index.css';
 import { createCard, deleteCard, likeButtonHandler } from './components/card.js';
 import { openPopup, closePopup } from './components/popup.js'
 import { enableValidation, clearValidation } from './validation.js'
-import { apiConfigInit, getUserData, getCards, patchUserData } from './api.js'
+import { apiConfigInit, getUserData, getCards, patchUserData, addCard } from './api.js'
 
 const placesListElement = document.querySelector('.places__list');
 const profileEditButton = document.querySelector('.profile__edit-button');
@@ -46,11 +46,9 @@ function profileEditPopupSubmitHandler(evt) {
         console.error('Failed to patch user data');
       }
     })
-    .then((res) => {
-      /*profileTitleElement.textContent = profileEditPopupNameInput.value;
-      profileDescriptionElement.textContent = profileEditPopupJobInput.value;*/
-      profileTitleElement.textContent = res.name;
-      profileDescriptionElement.textContent = res.about;
+    .then((userData) => {
+      profileTitleElement.textContent = userData.name;
+      profileDescriptionElement.textContent = userData.about;
       closePopup(profileEditPopupElement);
     })
     .catch((error) => console.log(error));
@@ -62,10 +60,22 @@ function newCardPopupSubmitHandler(evt) {
     name: newCardPopupNameInput.value,
     link: newCardPopupLinkInput.value
   };
-  renderCard(cardData, {deleteCard, likeButtonHandler, imageClickEventHandler});
-  newCardForm.reset();
-  clearValidation(newCardForm, validationSettings);
-  closePopup(newCardPopupElement);
+  addCard(cardData)
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      }
+      else {
+        console.error("Failed to add new card");
+      }
+    })
+    .then((newCardData) => {
+      renderCard(newCardData, {deleteCard, likeButtonHandler, imageClickEventHandler});
+      newCardForm.reset();
+      clearValidation(newCardForm, validationSettings);
+      closePopup(newCardPopupElement);
+    })
+    .catch((error) => console.error(error));
 }
 
 function imageClickEventHandler(cardData) {
