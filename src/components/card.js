@@ -8,10 +8,13 @@ function createCard(cardData, callbacks) {
   const cardImageElement = cardElement.querySelector('.card__image');
   const cardDeleteButtonElement = cardElement.querySelector('.card__delete-button');
   const cardLikeButtonElement = cardElement.querySelector('.card__like-button');
+  const numberOfLikesElement = cardElement.querySelector('.card__number-of-likes');
 
   cardTitleElement.textContent = cardData.name;
   cardImageElement.src = cardData.link;
   cardImageElement.alt = `${cardData.name} (фото)`;
+
+  numberOfLikesElement.textContent = cardData.likes.length;
 
   cardImageElement.addEventListener('click', (evt) => callbacks.imageClickEventHandler(cardData));
   cardDeleteButtonElement.addEventListener('click', callbacks.deleteCard);
