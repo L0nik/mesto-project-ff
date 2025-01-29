@@ -1,8 +1,8 @@
 import './index.css';
-import { createCard, deleteCard, likeButtonHandler } from './components/card.js';
+import { createCardElement, deleteCardElement, likeButtonHandler } from './components/card.js';
 import { openPopup, closePopup } from './components/popup.js'
 import { enableValidation, clearValidation } from './validation.js'
-import { apiConfigInit, getUserData, getCards, patchUserData, addCard } from './api.js'
+import { apiConfigInit, getUserData, getCards, patchUserData, addCard, deleteCard } from './api.js'
 
 const placesListElement = document.querySelector('.places__list');
 const profileEditButton = document.querySelector('.profile__edit-button');
@@ -20,6 +20,8 @@ const newCardPopupLinkInput = newCardForm.elements['link'];
 const imagePopupElement = document.querySelector('.popup_type_image');
 const imagePopupImgElement = imagePopupElement.querySelector('.popup__image');
 const imagePopupCaptionElement = imagePopupElement.querySelector('.popup__caption');
+
+const cardCallbacks = {deleteCardElement, likeButtonHandler, imageClickEventHandler, deleteCard};
 
 let userId;
 
@@ -70,7 +72,7 @@ function newCardPopupSubmitHandler(evt) {
       }
     })
     .then((newCardData) => {
-      renderCard(newCardData, {deleteCard, likeButtonHandler, imageClickEventHandler});
+      renderCard(newCardData, cardCallbacks);
       newCardForm.reset();
       clearValidation(newCardForm, validationSettings);
       closePopup(newCardPopupElement);
@@ -86,7 +88,8 @@ function imageClickEventHandler(cardData) {
 }
 
 function renderCard(cardData, callbacks, method = "prepend") {
-  const cardElement = createCard(cardData, callbacks);
+  const isOwner = cardData.owner._id === userId;
+  const cardElement = createCardElement(cardData, isOwner, callbacks);
   placesListElement[method](cardElement);
 }
 
@@ -135,7 +138,7 @@ Promise.all([userDataPromise, initialCardsPromise])
     });
     responses[1].json().then((initialCards) =>{
       for (const cardData of initialCards){
-        renderCard(cardData, {deleteCard, likeButtonHandler, imageClickEventHandler}, "append");
+        renderCard(cardData, cardCallbacks, "append");
       }
     });
   })

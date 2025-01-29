@@ -1,7 +1,7 @@
 
 const cardTemplate = document.querySelector('#card-template').content;
 
-function createCard(cardData, callbacks) {
+function createCardElement(cardData, isOwner, callbacks) {
 
   const cardElement = cardTemplate.cloneNode(true);
   const cardTitleElement = cardElement.querySelector('.card__title');
@@ -16,15 +16,32 @@ function createCard(cardData, callbacks) {
 
   numberOfLikesElement.textContent = cardData.likes.length;
 
+  if (isOwner) {
+    cardDeleteButtonElement.addEventListener('click', (evt) => {
+      callbacks.deleteCard(cardData._id)
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          }
+
+          return Promise.reject(`Error: ${response.status}`);
+        })
+        .then((res) => callbacks.deleteCardElement(evt))
+        .catch((error) => console.error(error));
+    });
+  }
+  else {
+    cardDeleteButtonElement.style.display = 'none'; 
+  }
+
   cardImageElement.addEventListener('click', (evt) => callbacks.imageClickEventHandler(cardData));
-  cardDeleteButtonElement.addEventListener('click', callbacks.deleteCard);
   cardLikeButtonElement.addEventListener('click', callbacks.likeButtonHandler);
 
   return cardElement;
 
 }
 
-function deleteCard(event) {
+function deleteCardElement(event) {
   const cardElement = event.target.closest('.places__item');
   cardElement.remove();
 }
@@ -34,5 +51,5 @@ function likeButtonHandler(evt) {
 }
 
 module.exports = {
-  createCard, deleteCard, likeButtonHandler
+  createCardElement, deleteCardElement, likeButtonHandler
 }

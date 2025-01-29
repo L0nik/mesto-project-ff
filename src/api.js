@@ -11,16 +11,17 @@ function apiConfigInit(cohortId, token) {
   Config.token = token;
 }
 
-function sendRequest(method, resource, headers = {}, body = {}) {
+function sendRequest(method, resource, body = {}) {
 
   const options = {
     method: method,
     headers: {
-      authorization: Config.token
+      authorization: Config.token,
+      'Content-Type': 'application/json'
     },
   };
 
-  options.headers = Object.assign(options.headers, headers);
+  //options.headers = Object.assign(options.headers, headers);
 
   if (Object.keys(body).length !== 0) {
     options.body = JSON.stringify(body);
@@ -44,21 +45,21 @@ function getCards() {
 function patchUserData(userData) {
   const method = 'PATCH';
   const resource = 'users/me';
-  const headers = {
-    'Content-Type': 'application/json'
-  };
-  return sendRequest(method, resource, headers, userData);
+  return sendRequest(method, resource, userData);
 }
 
 function addCard(cardData) {
   const method = 'POST';
   const resource = 'cards';
-  const headers = {
-    'Content-Type': 'application/json'
-  };
-  return sendRequest(method, resource, headers, cardData);
+  return sendRequest(method, resource, cardData);
+}
+
+function deleteCard(id) {
+  const method = 'DELETE';
+  const resource = `cards/${id}`;
+  return sendRequest(method, resource);
 }
 
 module.exports = {
-  apiConfigInit, getUserData, getCards, patchUserData, addCard
+  apiConfigInit, getUserData, getCards, patchUserData, addCard, deleteCard
 }
