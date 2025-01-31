@@ -21,8 +21,6 @@ function sendRequest(method, resource, body = {}) {
     },
   };
 
-  //options.headers = Object.assign(options.headers, headers);
-
   if (Object.keys(body).length !== 0) {
     options.body = JSON.stringify(body);
   }
@@ -48,18 +46,30 @@ function patchUserData(userData) {
   return sendRequest(method, resource, userData);
 }
 
-function addCard(cardData) {
+function cardAdd(cardData) {
   const method = 'POST';
   const resource = 'cards';
   return sendRequest(method, resource, cardData);
 }
 
-function deleteCard(id) {
+function cardDelete(id) {
   const method = 'DELETE';
   const resource = `cards/${id}`;
   return sendRequest(method, resource);
 }
 
+function cardPutLike(id) {
+  const method = 'PUT';
+  const resource = `cards/likes/${id}`;
+  return sendRequest(method, resource);
+}
+
+function cardDeleteLike(id) {
+  const method = 'DELETE';
+  const resource = `cards/likes/${id}`;
+  return sendRequest(method, resource);
+}
+
 module.exports = {
-  apiConfigInit, getUserData, getCards, patchUserData, addCard, deleteCard
+  apiConfigInit, getUserData, getCards, patchUserData, cardAdd, cardDelete, cardPutLike, cardDeleteLike
 }

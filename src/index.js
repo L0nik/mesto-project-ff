@@ -2,7 +2,7 @@ import './index.css';
 import { createCardElement, deleteCardElement, likeButtonHandler } from './components/card.js';
 import { openPopup, closePopup } from './components/popup.js'
 import { enableValidation, clearValidation } from './validation.js'
-import { apiConfigInit, getUserData, getCards, patchUserData, addCard, deleteCard } from './api.js'
+import { apiConfigInit, getUserData, getCards, patchUserData, cardAdd, cardDelete, cardPutLike, cardDeleteLike } from './api.js'
 
 const placesListElement = document.querySelector('.places__list');
 const profileEditButton = document.querySelector('.profile__edit-button');
@@ -21,7 +21,10 @@ const imagePopupElement = document.querySelector('.popup_type_image');
 const imagePopupImgElement = imagePopupElement.querySelector('.popup__image');
 const imagePopupCaptionElement = imagePopupElement.querySelector('.popup__caption');
 
-const cardCallbacks = {deleteCardElement, likeButtonHandler, imageClickEventHandler, deleteCard};
+const cardCallbacks = {
+  eventHandlers: {deleteCardElement, likeButtonHandler, imageClickEventHandler},
+  apiMethods: {cardDelete, cardPutLike, cardDeleteLike}
+};
 
 let userId;
 
@@ -62,7 +65,7 @@ function newCardPopupSubmitHandler(evt) {
     name: newCardPopupNameInput.value,
     link: newCardPopupLinkInput.value
   };
-  addCard(cardData)
+  cardAdd(cardData)
     .then((response) => {
       if (response.ok) {
         return response.json();
@@ -88,8 +91,7 @@ function imageClickEventHandler(cardData) {
 }
 
 function renderCard(cardData, callbacks, method = "prepend") {
-  const isOwner = cardData.owner._id === userId;
-  const cardElement = createCardElement(cardData, isOwner, callbacks);
+  const cardElement = createCardElement(cardData, userId, callbacks);
   placesListElement[method](cardElement);
 }
 
