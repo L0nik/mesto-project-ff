@@ -2,19 +2,22 @@ import './index.css';
 import { createCardElement, deleteCardElement, likeButtonHandler } from './components/card.js';
 import { openPopup, closePopup } from './components/popup.js'
 import { enableValidation, clearValidation } from './validation.js'
-import { apiConfigInit, getUserData, getCards, patchUserData, cardAdd, cardDelete, cardPutLike, cardDeleteLike } from './api.js'
+import { apiConfigInit, getUserData, getCards, patchUserData, cardAdd, cardDelete, cardPutLike, cardDeleteLike, changeAvatar } from './api.js'
 
 const placesListElement = document.querySelector('.places__list');
 const profileEditButton = document.querySelector('.profile__edit-button');
 const profileAddButton = document.querySelector('.profile__add-button');
+const profileImageElement = document.querySelector('.profile__image');
 const popupElements = document.querySelectorAll('.popup');
+const changeAvatarPopupElement = document.querySelector('.popup_type_change-avatar');
+const changeAvatarForm = document.forms['change-avatar'];
 const profileEditPopupElement = document.querySelector('.popup_type_edit');
 const profileEditPopupNameInput = profileEditPopupElement.querySelector('.popup__input_type_name');
 const profileEditPopupJobInput = profileEditPopupElement.querySelector('.popup__input_type_description');
 const profileTitleElement = document.querySelector('.profile__title');
 const profileDescriptionElement = document.querySelector('.profile__description');
 const newCardPopupElement = document.querySelector('.popup_type_new-card');
-const newCardForm = document.forms["new-place"];
+const newCardForm = document.forms['new-place'];
 const newCardPopupNameInput = newCardForm.elements['place-name'];
 const newCardPopupLinkInput = newCardForm.elements['link'];
 const imagePopupElement = document.querySelector('.popup_type_image');
@@ -70,15 +73,34 @@ function newCardPopupSubmitHandler(evt) {
       if (response.ok) {
         return response.json();
       }
-      else {
-        console.error("Failed to add new card");
-      }
+      return Promise.reject(`Error: ${response.status}`);
     })
     .then((newCardData) => {
       renderCard(newCardData, cardCallbacks);
       newCardForm.reset();
       clearValidation(newCardForm, validationSettings);
       closePopup(newCardPopupElement);
+    })
+    .catch((error) => console.error(error));
+}
+
+function changeAvatarPopupSubmitHandler(evt) {
+  evt.preventDefault();
+  const newAvatarData = {
+    avatar: changeAvatarForm['link'].value
+  };
+  changeAvatar(newAvatarData)
+    .then((response) => {
+      if (response.ok){
+        return response.json();
+      }
+      return Promise.reject(`Error: ${response.status}`);
+    })
+    .then((userData) => {
+      renderUserData(userData);
+      changeAvatarForm.reset();
+      clearValidation(changeAvatarForm, validationSettings);
+      closePopup(changeAvatarPopupElement);
     })
     .catch((error) => console.error(error));
 }
@@ -113,6 +135,12 @@ profileAddButton.addEventListener('click', function(evt) {
   clearValidation(newCardForm, validationSettings);
 });
 
+profileImageElement.addEventListener('click', function(evt) {
+  openPopup(changeAvatarPopupElement);
+  clearValidation(changeAvatarForm, validationSettings);
+});
+
+changeAvatarPopupElement.addEventListener('submit', changeAvatarPopupSubmitHandler);
 profileEditPopupElement.addEventListener('submit', profileEditPopupSubmitHandler);
 newCardPopupElement.addEventListener('submit', newCardPopupSubmitHandler);
 

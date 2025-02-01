@@ -70,6 +70,12 @@ function cardDeleteLike(id) {
   return sendRequest(method, resource);
 }
 
+function changeAvatar(newAvatarData) {
+  const method = 'PATCH';
+  const resource = `users/me/avatar`;
+  return sendRequest(method, resource, newAvatarData);
+}
+
 module.exports = {
-  apiConfigInit, getUserData, getCards, patchUserData, cardAdd, cardDelete, cardPutLike, cardDeleteLike
+  apiConfigInit, getUserData, getCards, patchUserData, cardAdd, cardDelete, cardPutLike, cardDeleteLike, changeAvatar
 }

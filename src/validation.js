@@ -55,7 +55,7 @@ function setValidationMessage(inputElement) {
   } 
 }
 
-function showInputError(formElement, inputElement, validationSettings, errorMessage) {
+function showInputError(formElement, inputElement, validationSettings) {
   const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
   inputElement.classList.add('popup__input_error');
   errorElement.textContent = inputElement.validationMessage;
