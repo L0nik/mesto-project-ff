@@ -12,6 +12,15 @@ function closePopup(popupElement) {
   popupElement.removeEventListener('keydown', popupKeydownEventHandler);
 }
 
+function changeSubmitButtonState(popupElement, state) {
+  const submitButtonElement = popupElement.querySelector('[type="submit"]');
+  if (typeof(submitButtonElement) === 'undefined') {
+    return;
+  }
+  const dataAttributeName = 'content' + state;
+  submitButtonElement.textContent = submitButtonElement.dataset[dataAttributeName];
+}
+
 function popupKeydownEventHandler(evt) {
   if (evt.key === 'Escape') {
     const popupElement = evt.target.closest('.popup');
@@ -20,5 +29,5 @@ function popupKeydownEventHandler(evt) {
 }
 
 module.exports = {
-  openPopup, closePopup
+  openPopup, closePopup, changeSubmitButtonState
 }

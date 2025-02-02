@@ -1,6 +1,6 @@
 import './index.css';
 import { createCardElement, deleteCardElement, likeButtonHandler } from './components/card.js';
-import { openPopup, closePopup } from './components/popup.js'
+import { openPopup, closePopup, changeSubmitButtonState } from './components/popup.js'
 import { enableValidation, clearValidation } from './validation.js'
 import { apiConfigInit, getUserData, getCards, patchUserData, cardAdd, cardDelete, cardPutLike, cardDeleteLike, changeAvatar } from './api.js'
 
@@ -38,10 +38,11 @@ const validationSettings = {
   inactiveButtonClass: 'popup__button_disabled',
   inputErrorClass: 'popup__error',
   errorClass: 'popup__error_visible'
-}; 
+};
 
 function profileEditPopupSubmitHandler(evt) {
   evt.preventDefault();
+  changeSubmitButtonState(profileEditPopupElement, 'Loading');
   patchUserData({
     name: profileEditPopupNameInput.value,
     about: profileEditPopupJobInput.value
@@ -59,11 +60,13 @@ function profileEditPopupSubmitHandler(evt) {
       profileDescriptionElement.textContent = userData.about;
       closePopup(profileEditPopupElement);
     })
-    .catch((error) => console.log(error));
+    .catch((error) => console.log(error))
+    .finally(() => changeSubmitButtonState(profileEditPopupElement, 'Normal'));
 }
 
 function newCardPopupSubmitHandler(evt) {
   evt.preventDefault();
+  changeSubmitButtonState(newCardPopupElement, 'Loading')
   const cardData = {
     name: newCardPopupNameInput.value,
     link: newCardPopupLinkInput.value
@@ -81,11 +84,13 @@ function newCardPopupSubmitHandler(evt) {
       clearValidation(newCardForm, validationSettings);
       closePopup(newCardPopupElement);
     })
-    .catch((error) => console.error(error));
+    .catch((error) => console.error(error))
+    .finally(() => changeSubmitButtonState(newCardPopupElement, 'Normal'));
 }
 
 function changeAvatarPopupSubmitHandler(evt) {
   evt.preventDefault();
+  changeSubmitButtonState(changeAvatarPopupElement, 'Loading');
   const newAvatarData = {
     avatar: changeAvatarForm['link'].value
   };
@@ -102,7 +107,8 @@ function changeAvatarPopupSubmitHandler(evt) {
       clearValidation(changeAvatarForm, validationSettings);
       closePopup(changeAvatarPopupElement);
     })
-    .catch((error) => console.error(error));
+    .catch((error) => console.error(error))
+    .finally(() => changeSubmitButtonState(changeAvatarPopupElement, 'Normal'));
 }
 
 function imageClickEventHandler(cardData) {
