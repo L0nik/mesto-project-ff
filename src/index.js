@@ -26,7 +26,8 @@ const imagePopupCaptionElement = imagePopupElement.querySelector('.popup__captio
 
 const cardCallbacks = {
   eventHandlers: {deleteCardElement, likeButtonHandler, imageClickEventHandler},
-  apiMethods: {cardDelete, cardPutLike, cardDeleteLike}
+  apiMethods: {cardDelete, cardPutLike, cardDeleteLike},
+  popupMethods: {openPopup, closePopup}
 };
 
 let userId;

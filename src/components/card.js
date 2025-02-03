@@ -45,18 +45,38 @@ function createCardElement(cardData, userId, callbacks) {
 
 }
 
-function deleteCardElement(event, cardId, callbacks) {
-  const cardElement = event.target.closest('.places__item');
-  callbacks.apiMethods.cardDelete(cardId)
-        .then((response) => {
-          if (response.ok) {
-            return response.json();
-          }
+function deleteCardElement(evt, cardId, callbacks) {
+  const cardElement = evt.target.closest('.places__item');
+  const removeCardPopupElement = document.querySelector('.popup_type_remove-card');
+  const removeCardForm = document.forms['remove-card'];
+  removeCardForm.addEventListener('submit', (evt) => {
+    deleteCardElementAfterConfirmation(evt, cardElement, cardId, callbacks)
+      .then((res) => callbacks.popupMethods.closePopup(removeCardPopupElement))
+      .catch((error) => console.log(error));
+  });
+  callbacks.popupMethods.openPopup(removeCardPopupElement);
+}
 
-          return Promise.reject(`Error: ${response.status}`);
-        })
-        .then((res) => cardElement.remove())
-        .catch((error) => console.error(error));
+function deleteCardElementAfterConfirmation(evt, cardElement, cardId, callbacks) {
+  evt.preventDefault();
+  return new Promise((resolve, reject) => {
+    callbacks.apiMethods.cardDelete(cardId)
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      }
+
+      return Promise.reject(`Error: ${response.status}`);
+    })
+    .then((res) => {
+      cardElement.remove();
+      resolve('success');
+    })
+    .catch((error) => {
+      console.error(error);
+      reject(error);
+    });
+  });
 }
 
 function likeButtonHandler(cardId, cardLikeButtonElement, numberOfLikesElement, callbacks) {
