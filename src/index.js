@@ -1,13 +1,12 @@
 import './index.css';
 import { createCardElement, deleteCardElement, likeButtonHandler } from './components/card.js';
-import { openPopup, closePopup, changeSubmitButtonState } from './components/popup.js'
+import { openPopup, closePopup } from './components/popup.js'
 import { enableValidation, clearValidation } from './validation.js'
 import { apiConfigInit, getUserData, getCards, patchUserData, cardAdd, cardDelete, cardPutLike, cardDeleteLike, changeAvatar } from './api.js'
 
 const placesListElement = document.querySelector('.places__list');
 const profileEditButton = document.querySelector('.profile__edit-button');
 const profileAddButton = document.querySelector('.profile__add-button');
-const profileImageElement = document.querySelector('.profile__image');
 const popupElements = document.querySelectorAll('.popup');
 const changeAvatarPopupElement = document.querySelector('.popup_type_change-avatar');
 const changeAvatarForm = document.forms['change-avatar'];
@@ -16,7 +15,11 @@ const profileEditPopupNameInput = profileEditPopupElement.querySelector('.popup_
 const profileEditPopupJobInput = profileEditPopupElement.querySelector('.popup__input_type_description');
 const profileTitleElement = document.querySelector('.profile__title');
 const profileDescriptionElement = document.querySelector('.profile__description');
+const profileImageElement = document.querySelector('.profile__image');
 const newCardPopupElement = document.querySelector('.popup_type_new-card');
+const removeCardPopupElement = document.querySelector('.popup_type_remove-card');
+const editProfileForm = document.forms['edit-profile'];
+const removeCardForm = document.forms['remove-card'];
 const newCardForm = document.forms['new-place'];
 const newCardPopupNameInput = newCardForm.elements['place-name'];
 const newCardPopupLinkInput = newCardForm.elements['link'];
@@ -25,37 +28,42 @@ const imagePopupImgElement = imagePopupElement.querySelector('.popup__image');
 const imagePopupCaptionElement = imagePopupElement.querySelector('.popup__caption');
 
 const cardCallbacks = {
-  eventHandlers: {deleteCardElement, likeButtonHandler, imageClickEventHandler},
-  apiMethods: {cardDelete, cardPutLike, cardDeleteLike},
-  popupMethods: {openPopup, closePopup}
+  eventHandlers: {deleteCardElement, likeButtonHandler, clickImageEventHandler, clickDeleteCardButtonHandler},
+  apiMethods: {cardDelete, cardPutLike, cardDeleteLike}
 };
 
 let userId;
+
+const cardToRemove = {
+  cardId: null,
+  cardElement: null
+}
 
 const validationSettings = {
   formSelector: '.popup__form',
   inputSelector: '.popup__input',
   submitButtonSelector: '.popup__button',
   inactiveButtonClass: 'popup__button_disabled',
-  inputErrorClass: 'popup__error',
-  errorClass: 'popup__error_visible'
+  inputErrorClass: 'popup__input_error',
+  errorClass: 'popup__error_visible',
 };
 
-function profileEditPopupSubmitHandler(evt) {
+function changeSubmitButtonState(popupElement, state) {
+  const submitButtonElement = popupElement.querySelector('[type="submit"]');
+  if (typeof(submitButtonElement) === 'undefined') {
+    return;
+  }
+  const dataAttributeName = 'content' + state;
+  submitButtonElement.textContent = submitButtonElement.dataset[dataAttributeName];
+}
+
+function editProfilePopupSubmitHandler(evt) {
   evt.preventDefault();
   changeSubmitButtonState(profileEditPopupElement, 'Loading');
   patchUserData({
     name: profileEditPopupNameInput.value,
     about: profileEditPopupJobInput.value
   })
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      }
-      else {
-        console.error('Failed to patch user data');
-      }
-    })
     .then((userData) => {
       profileTitleElement.textContent = userData.name;
       profileDescriptionElement.textContent = userData.about;
@@ -65,7 +73,7 @@ function profileEditPopupSubmitHandler(evt) {
     .finally(() => changeSubmitButtonState(profileEditPopupElement, 'Normal'));
 }
 
-function newCardPopupSubmitHandler(evt) {
+function addNewCardPopupSubmitHandler(evt) {
   evt.preventDefault();
   changeSubmitButtonState(newCardPopupElement, 'Loading')
   const cardData = {
@@ -73,12 +81,6 @@ function newCardPopupSubmitHandler(evt) {
     link: newCardPopupLinkInput.value
   };
   cardAdd(cardData)
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      }
-      return Promise.reject(`Error: ${response.status}`);
-    })
     .then((newCardData) => {
       renderCard(newCardData, cardCallbacks);
       newCardForm.reset();
@@ -96,12 +98,6 @@ function changeAvatarPopupSubmitHandler(evt) {
     avatar: changeAvatarForm['link'].value
   };
   changeAvatar(newAvatarData)
-    .then((response) => {
-      if (response.ok){
-        return response.json();
-      }
-      return Promise.reject(`Error: ${response.status}`);
-    })
     .then((userData) => {
       renderUserData(userData);
       changeAvatarForm.reset();
@@ -112,11 +108,31 @@ function changeAvatarPopupSubmitHandler(evt) {
     .finally(() => changeSubmitButtonState(changeAvatarPopupElement, 'Normal'));
 }
 
-function imageClickEventHandler(cardData) {
+function clickImageEventHandler(cardData) {
     imagePopupCaptionElement.textContent = cardData.name;
     imagePopupImgElement.src = cardData.link;
     imagePopupImgElement.alt = `${cardData.name} (фото)`;
     openPopup(imagePopupElement);
+}
+
+function clickDeleteCardButtonHandler(cardId, cardElement) {
+  cardToRemove.cardId = cardId;
+  cardToRemove.cardElement = cardElement;
+  openPopup(removeCardPopupElement);
+}
+
+function deleteCardElementAfterConfirmation(cardId, cardElement) {
+  return new Promise((resolve, reject) => {
+    cardDelete(cardId)
+    .then((res) => {
+      cardElement.remove();
+      resolve('success');
+    })
+    .catch((error) => {
+      console.error(error);
+      reject(error);
+    });
+  });
 }
 
 function renderCard(cardData, callbacks, method = "prepend") {
@@ -125,15 +141,15 @@ function renderCard(cardData, callbacks, method = "prepend") {
 }
 
 function renderUserData(userData) {
-  document.querySelector('.profile__title').textContent = userData.name;
-  document.querySelector('.profile__description').textContent = userData.about;
-  document.querySelector('.profile__image').style.backgroundImage = `url(${userData.avatar})`;
+  profileTitleElement.textContent = userData.name;
+  profileDescriptionElement.textContent = userData.about;
+  profileImageElement.style.backgroundImage = `url(${userData.avatar})`;
 }
 
 profileEditButton.addEventListener('click', function(evt) {
   profileEditPopupNameInput.value = profileTitleElement.textContent;
   profileEditPopupJobInput.value = profileDescriptionElement.textContent;
-  clearValidation(document.forms['edit-profile'], validationSettings);
+  clearValidation(editProfileForm, validationSettings);
   openPopup(profileEditPopupElement);
 });
 
@@ -148,8 +164,15 @@ profileImageElement.addEventListener('click', function(evt) {
 });
 
 changeAvatarPopupElement.addEventListener('submit', changeAvatarPopupSubmitHandler);
-profileEditPopupElement.addEventListener('submit', profileEditPopupSubmitHandler);
-newCardPopupElement.addEventListener('submit', newCardPopupSubmitHandler);
+profileEditPopupElement.addEventListener('submit', editProfilePopupSubmitHandler);
+newCardPopupElement.addEventListener('submit', addNewCardPopupSubmitHandler);
+
+removeCardForm.addEventListener('submit', (evt) => {
+  evt.preventDefault();
+  deleteCardElementAfterConfirmation(cardToRemove.cardId, cardToRemove.cardElement)
+    .then((res) => closePopup(removeCardPopupElement))
+    .catch((error) => console.log(error));
+});
 
 popupElements.forEach((popupElement) => {
   popupElement.addEventListener('mousedown', (evt) => {
@@ -169,14 +192,12 @@ const userDataPromise = getUserData();
 const initialCardsPromise = getCards();
 Promise.all([userDataPromise, initialCardsPromise])
   .then((responses) => {
-    responses[0].json().then((userData) =>{
-      userId = userData['_id'];
-      renderUserData(userData);
-    });
-    responses[1].json().then((initialCards) =>{
-      for (const cardData of initialCards){
-        renderCard(cardData, cardCallbacks, "append");
-      }
-    });
+    const userData = responses[0];
+    const initialCards = responses[1];
+    userId = userData['_id'];
+    renderUserData(userData);
+    for (const cardData of initialCards){
+      renderCard(cardData, cardCallbacks, "append");
+    }
   })
   .catch((error) => console.log(error));

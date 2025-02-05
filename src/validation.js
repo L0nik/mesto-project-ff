@@ -57,14 +57,14 @@ function setValidationMessage(inputElement) {
 
 function showInputError(formElement, inputElement, validationSettings) {
   const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
-  inputElement.classList.add('popup__input_error');
+  inputElement.classList.add(validationSettings.inputErrorClass);
   errorElement.textContent = inputElement.validationMessage;
   errorElement.classList.add(validationSettings.errorClass);
 }
 
 function hideInputError(formElement, inputElement, validationSettings) {
   const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
-  inputElement.classList.remove('popup__input_error');
+  inputElement.classList.remove(validationSettings.inputErrorClass);
   errorElement.classList.remove(validationSettings.errorClass);
   errorElement.textContent = '';
 };

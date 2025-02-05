@@ -25,7 +25,13 @@ function sendRequest(method, resource, body = {}) {
     options.body = JSON.stringify(body);
   }
 
-  return fetch(`${Config.host}/${Config.apiVersion}/${Config.cohortId}/${resource}`, options);
+  return fetch(`${Config.host}/${Config.apiVersion}/${Config.cohortId}/${resource}`, options)
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      }
+      return Promise.reject(`Error: ${response.status}`);
+    });
 }
 
 function getUserData() {
