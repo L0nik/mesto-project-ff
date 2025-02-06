@@ -52,25 +52,25 @@ function patchUserData(userData) {
   return sendRequest(method, resource, userData);
 }
 
-function cardAdd(cardData) {
+function addCard(cardData) {
   const method = 'POST';
   const resource = 'cards';
   return sendRequest(method, resource, cardData);
 }
 
-function cardDelete(id) {
+function deleteCard(id) {
   const method = 'DELETE';
   const resource = `cards/${id}`;
   return sendRequest(method, resource);
 }
 
-function cardPutLike(id) {
+function putLike(id) {
   const method = 'PUT';
   const resource = `cards/likes/${id}`;
   return sendRequest(method, resource);
 }
 
-function cardDeleteLike(id) {
+function deleteLike(id) {
   const method = 'DELETE';
   const resource = `cards/likes/${id}`;
   return sendRequest(method, resource);
@@ -83,5 +83,5 @@ function changeAvatar(newAvatarData) {
 }
 
 module.exports = {
-  apiConfigInit, getUserData, getCards, patchUserData, cardAdd, cardDelete, cardPutLike, cardDeleteLike, changeAvatar
+  apiConfigInit, getUserData, getCards, patchUserData, addCard, deleteCard, putLike, deleteLike, changeAvatar
 }

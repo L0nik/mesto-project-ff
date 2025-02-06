@@ -53,15 +53,8 @@ function likeButtonHandler(cardId, cardLikeButtonElement, numberOfLikesElement, 
   cardLikeButtonElement.classList.toggle('card__like-button_is-active');
   const isLiked = cardLikeButtonElement.classList.contains('card__like-button_is-active');
 
-  const apiMethod = isLiked ? "cardPutLike" : "cardDeleteLike";
+  const apiMethod = isLiked ? "putLike" : "deleteLike";
   callbacks.apiMethods[apiMethod](cardId)
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      }
-
-      return Promise.reject(`Error: ${response.status}`);
-    })
     .then((cardData) => {
       numberOfLikesElement.textContent = cardData.likes.length;
     })

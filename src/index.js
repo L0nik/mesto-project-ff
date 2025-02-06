@@ -2,7 +2,7 @@ import './index.css';
 import { createCardElement, deleteCardElement, likeButtonHandler } from './components/card.js';
 import { openPopup, closePopup } from './components/popup.js'
 import { enableValidation, clearValidation } from './validation.js'
-import { apiConfigInit, getUserData, getCards, patchUserData, cardAdd, cardDelete, cardPutLike, cardDeleteLike, changeAvatar } from './api.js'
+import { apiConfigInit, getUserData, getCards, patchUserData, addCard, deleteCard, putLike, deleteLike, changeAvatar } from './api.js'
 
 const placesListElement = document.querySelector('.places__list');
 const profileEditButton = document.querySelector('.profile__edit-button');
@@ -29,7 +29,7 @@ const imagePopupCaptionElement = imagePopupElement.querySelector('.popup__captio
 
 const cardCallbacks = {
   eventHandlers: {deleteCardElement, likeButtonHandler, clickImageEventHandler, clickDeleteCardButtonHandler},
-  apiMethods: {cardDelete, cardPutLike, cardDeleteLike}
+  apiMethods: {putLike, deleteLike}
 };
 
 let userId;
@@ -80,7 +80,7 @@ function addNewCardPopupSubmitHandler(evt) {
     name: newCardPopupNameInput.value,
     link: newCardPopupLinkInput.value
   };
-  cardAdd(cardData)
+  addCard(cardData)
     .then((newCardData) => {
       renderCard(newCardData, cardCallbacks);
       newCardForm.reset();
@@ -121,20 +121,6 @@ function clickDeleteCardButtonHandler(cardId, cardElement) {
   openPopup(removeCardPopupElement);
 }
 
-function deleteCardElementAfterConfirmation(cardId, cardElement) {
-  return new Promise((resolve, reject) => {
-    cardDelete(cardId)
-    .then((res) => {
-      cardElement.remove();
-      resolve('success');
-    })
-    .catch((error) => {
-      console.error(error);
-      reject(error);
-    });
-  });
-}
-
 function renderCard(cardData, callbacks, method = "prepend") {
   const cardElement = createCardElement(cardData, userId, callbacks);
   placesListElement[method](cardElement);
@@ -167,11 +153,17 @@ changeAvatarPopupElement.addEventListener('submit', changeAvatarPopupSubmitHandl
 profileEditPopupElement.addEventListener('submit', editProfilePopupSubmitHandler);
 newCardPopupElement.addEventListener('submit', addNewCardPopupSubmitHandler);
 
-removeCardForm.addEventListener('submit', (evt) => {
+removeCardForm.addEventListener("submit", (evt) => {
+
   evt.preventDefault();
-  deleteCardElementAfterConfirmation(cardToRemove.cardId, cardToRemove.cardElement)
-    .then((res) => closePopup(removeCardPopupElement))
-    .catch((error) => console.log(error));
+
+  deleteCard(cardToRemove.cardId)
+    .then((res) => {
+      cardToRemove.cardElement.remove();
+      closePopup(removeCardPopupElement);
+    })
+    .catch((error) => console.error(error));
+
 });
 
 popupElements.forEach((popupElement) => {
